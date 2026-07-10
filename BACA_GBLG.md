@@ -7,9 +7,9 @@
 ## 🧠 Tentang Project
 
 **SportX Fest** adalah aplikasi web manajemen event olahraga berbasis **Laravel 12**.  
-Sistem ini memiliki dua layer utama:
-- **User Area** — register, login, dashboard sederhana
-- **Admin Panel** — manajemen user, event, registrasi peserta, activity log, statistik & chart
+Sistem ini memiliki beberapa layer utama:
+- **User Area** — register, login, dashboard sederhana, daftar event, contact form, dan dokumentasi
+- **Admin Panel** — manajemen user, event, registrasi peserta, dokumentasi foto, contact inbox, activity log, statistik & chart
 
 Project ini cocok dijadikan **portfolio**, **bahan belajar Laravel**, atau **base project** untuk dikembangkan lebih lanjut.
 
@@ -24,7 +24,7 @@ Project ini cocok dijadikan **portfolio**, **bahan belajar Laravel**, atau **bas
 | Database | MySQL (via XAMPP) | — |
 | Frontend | Blade Templating | — |
 | CSS | Custom CSS (inline di layout) | — |
-| CSS Framework | Tailwind CSS v4 | tersedia, belum dipakai di auth |
+| CSS Framework | Bootstrap 5 + custom CSS | dipakai di layout publik dan admin |
 | Build Tool | Vite + laravel-vite-plugin | ^7.0 / ^2.0 |
 | Chart | Chart.js | CDN |
 | Alert | SweetAlert2 | CDN |
@@ -47,14 +47,18 @@ sportxfest/
 │   │   │       ├── UserController.php          ← CRUD + role + status user
 │   │   │       ├── EventController.php         ← CRUD event + upload gambar
 │   │   │       ├── RegistrationController.php  ← approve/reject peserta
-│   │   │       └── ActivityLogController.php   ← list log aktivitas
+│   │   │       ├── ActivityLogController.php   ← list log aktivitas
+│   │   │       └── GalleryController.php       ← CRUD foto dokumentasi
 │   │   └── Middleware/
 │   │       └── AdminMiddleware.php             ← blokir non-admin
 │   ├── Models/
 │   │   ├── User.php
 │   │   ├── Event.php
 │   │   ├── Registration.php
-│   │   └── ActivityLog.php
+│   │   ├── ActivityLog.php
+│   │   ├── Contact.php
+│   │   ├── GalleryPhoto.php
+│   │   └── UserProfile.php
 │   └── Providers/
 │       └── AppServiceProvider.php             ← Paginator::useBootstrapFive()
 ├── bootstrap/
@@ -67,10 +71,15 @@ sportxfest/
 │   │   ├── 2024_01_01_000001_add_role_status_to_users_table.php
 │   │   ├── 2024_01_01_000002_create_events_table.php
 │   │   ├── 2024_01_01_000003_create_registrations_table.php
-│   │   └── 2024_01_01_000004_create_activity_logs_table.php
+│   │   ├── 2024_01_01_000004_create_activity_logs_table.php
+│   │   ├── 2024_01_01_000005_add_phone_to_users_table.php
+│   │   ├── 2024_01_01_000006_create_user_profile_table.php
+│   │   ├── 2026_07_10_000001_create_contacts_table.php
+│   │   └── 2026_07_10_000002_create_gallery_photos_table.php
 │   └── seeders/
 │       ├── AdminSeeder.php                    ← buat akun admin default
-│       └── DatabaseSeeder.php
+│       ├── DatabaseSeeder.php
+│       └── EventSeeder.php
 ├── public/
 │   ├── css/style.css                          ← styling auth pages
 │   └── images/
@@ -89,7 +98,20 @@ sportxfest/
 │   │   ├── events/create.blade.php
 │   │   ├── events/edit.blade.php
 │   │   ├── registrations/index.blade.php
-│   │   └── logs/index.blade.php
+│   │   ├── logs/index.blade.php
+│   │   ├── contact.blade.php
+│   │   └── documentation/
+│   │       ├── index.blade.php
+│   │       └── edit.blade.php
+│   ├── events/
+│   │   ├── home.blade.php
+│   │   ├── public_index.blade.php
+│   │   ├── daftar.blade.php
+│   │   ├── contact.blade.php
+│   │   ├── dokumentasi.blade.php
+│   │   └── (halaman publik tambahan lain mengikuti kebutuhan)
+│   ├── layouts/
+│   │   └── public.blade.php
 │   └── dashboard.blade.php                   ← dashboard user biasa
 └── routes/web.php
 ```
@@ -122,6 +144,23 @@ sportxfest/
 | quota | integer | maks peserta |
 | image | varchar nullable | path gambar (storage/public) |
 | status | enum(open,closed) | default: open |
+
+### Tabel `contacts`
+| Kolom | Tipe | Keterangan |
+|-------|------|-----------|
+| id | bigint PK | — |
+| nama | varchar | nama pengirim |
+| email | varchar | email pengirim |
+| subject | varchar | judul pesan |
+| pesan | text | isi pesan |
+
+### Tabel `gallery_photos`
+| Kolom | Tipe | Keterangan |
+|-------|------|-----------|
+| id | bigint PK | — |
+| event_id | FK → events nullable | relasi ke event dokumentasi |
+| photo_path | varchar | path file foto |
+| description | text nullable | deskripsi kegiatan |
 
 ### Tabel `registrations`
 | Kolom | Tipe | Keterangan |
@@ -164,7 +203,12 @@ Redirect logic (di `bootstrap/app.php`):
 ## 🌐 Route Map
 
 ```
-GET  /                          → redirect /login
+GET  /                          → redirect /home
+GET  /home                      → home publik
+GET  /events-list               → daftar semua event
+GET  /dokumentasi               → arsip foto dokumentasi per event
+GET  /contact                   → halaman contact publik
+POST /contact                   → simpan pesan contact
 GET  /login                     → form login        [guest]
 POST /login                     → proses login      [guest]
 GET  /register                  → form register     [guest]
@@ -187,7 +231,24 @@ GET    /admin/registrations                  [auth, admin]
 PATCH  /admin/registrations/{id}/approve     [auth, admin]
 PATCH  /admin/registrations/{id}/reject      [auth, admin]
 GET    /admin/logs                           [auth, admin]
+GET    /admin/contact                        [auth, admin]
+DELETE /admin/contact/{contact}              [auth, admin]
+GET    /admin/dokumentasi                    [auth, admin]
+POST   /admin/dokumentasi                    [auth, admin]
+GET    /admin/dokumentasi/{galleryPhoto}/edit [auth, admin]
+PUT    /admin/dokumentasi/{galleryPhoto}     [auth, admin]
+DELETE /admin/dokumentasi/{galleryPhoto}     [auth, admin]
 ```
+
+---
+
+## 🧩 Fitur Aktif Sekarang
+
+- **Publik**: Home, Events, Dokumentasi, Contact, Login, Register, Dashboard user
+- **Registrasi event**: pilih event, cek kuota, simpan pending/approve/reject
+- **Contact form**: pesan user masuk ke tabel `contacts`, admin bisa lihat inbox dan balas via email
+- **Dokumentasi galeri**: foto per event ditampilkan di halaman Dokumentasi dan bisa ditautkan ke event terkait
+- **Admin panel**: user, event, registrations, logs, contact inbox, dan dokumentasi foto
 
 ---
 
@@ -255,9 +316,20 @@ php artisan serve
 
 Akses di browser:
 ```
+Home         → http://localhost:8000/home
+Dokumentasi  → http://localhost:8000/dokumentasi
+Contact      → http://localhost:8000/contact
 User Login   → http://localhost:8000/login
 Admin Panel  → http://localhost:8000/admin/dashboard
 ```
+
+---
+
+## 📝 Catatan QA Terakhir
+
+- Route root `/` sekarang redirect ke `/home`, jadi test default Laravel yang mengharapkan 200 di `/` memang perlu disesuaikan.
+- Dokumentasi galeri dan contact inbox sudah ada di program utama, jadi folder lama seperti `Rafa-Dokumentasi` dan `Gilbert-Contact-us` tidak lagi dibutuhkan sebagai dependency.
+- Untuk upload gambar event/dokumentasi, jalankan `php artisan storage:link` sekali jika belum pernah.
 
 > Jika menggunakan Apache XAMPP langsung (tanpa `php artisan serve`):
 > `http://localhost/sportxfest/public/login`
@@ -302,10 +374,10 @@ Auth::attempt(['email' => 'admin@sportxfest.com', 'password' => 'admin123']);
 
 ## ⚠️ Kekurangan & Batasan Saat Ini
 
-- **Dashboard user sangat minimal** — hanya tampil email, belum ada fitur untuk user (lihat event, daftar event, lihat status registrasi)
-- **Belum ada fitur registrasi event dari sisi user** — user tidak bisa mendaftar event sendiri, hanya admin yang manage
-- **Tidak ada email notification** — approve/reject registrasi tidak mengirim notifikasi ke user
-- **Tidak ada export data** — belum ada fitur export Excel/CSV untuk user atau peserta
+- **Dashboard user masih sederhana** — user sudah bisa lihat area dasar, tapi belum ada summary aktivitas yang kaya
+- **Belum ada email notification otomatis** — approve/reject registrasi dan contact reply masih manual melalui inbox/email client
+- **Belum ada export data** — belum ada fitur export Excel/CSV untuk user, peserta, atau dokumentasi
+- **Belum ada manajemen galeri tingkat lanjut** — misalnya album, tag, atau filter kategori foto per event
 - **welcome.blade.php masih default Laravel** — belum diganti dengan landing page SportX Fest
 - **Tidak ada fitur reset password** — user yang lupa password tidak bisa reset sendiri
 - **Tidak ada pagination settings global** — per_page hanya ada di halaman Users
