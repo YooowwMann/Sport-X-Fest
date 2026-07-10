@@ -1,4 +1,4 @@
-# 📖 BACA_GBLG — SportX Fest
+# 📖 SportX Fest
 > Dokumentasi lengkap untuk developer, AI agent, dan siapa saja yang mau ngoprek project ini.
 > Baca dari atas ke bawah sebelum ngapa-ngapain.
 
