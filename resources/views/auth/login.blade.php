@@ -2,8 +2,9 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>SportX Fest Login </title>
-    <Link rel="stylesheet" href="{{ asset('css/style.css')}}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SportXFest</title>
+    <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
 </head>
 <body>
     <div class="container">
@@ -26,28 +27,25 @@
                     <p style="color:red">{{ session('error') }}</p>
                 @endif
                 
-                <form method="POST" action="/login">
+                <form method="POST" action="{{ route('login') }}">
                     @csrf
-                    <input type="email" name="email" placeholder="Email" required>
-                    <div style="position:relative;">
+                    <input type="email" name="email" placeholder="Email" value="{{ old('email') }}" required>
+                    <div class="form-group">
                         <input type="password" id="password" name="password" placeholder="Password" required>
-                        <span onclick="togglePassword()" style="position:absolute;right:10px;top:15%;transform:translateY(-15%);cursor:pointer;">
-                        👁️
-                        </span>
+                        <span onclick="togglePassword()" class="toggle-eye">👁️</span>
                     </div>
                     @error('email')
-                        <p style="color:red">{{ $message }}</p>
+                        <p style="color:red;font-size:.8rem;margin-top:-8px;margin-bottom:8px;">{{ $message }}</p>
                     @enderror
-                    
                     @error('password')
-                        <p style="color:red">{{ $message }}</p>
+                        <p style="color:red;font-size:.8rem;margin-top:-8px;margin-bottom:8px;">{{ $message }}</p>
                     @enderror
                     <button type="submit">Login</button>
                 </form>
 
                 <p>
                     Don't have an account?
-                    <a href="/register">Register</a>
+                    <a href="{{ route('register') }}">Register</a>
                 </p>
             </div>
         </div>

@@ -161,6 +161,12 @@
         <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
             <i class="fas fa-tachometer-alt"></i> Dashboard
         </a>
+        <a href="{{ route('profile') }}" class="nav-item {{ request()->routeIs('profile') ? 'active' : '' }}">
+            <i class="fas fa-id-card"></i> Profil Tim
+        </a>
+        <a href="{{ route('home') }}" class="nav-item">
+            <i class="fas fa-globe"></i> Halaman Publik
+        </a>
 
         <div class="nav-section">Management</div>
         <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
@@ -169,8 +175,14 @@
         <a href="{{ route('admin.events.index') }}" class="nav-item {{ request()->routeIs('admin.events.*') ? 'active' : '' }}">
             <i class="fas fa-calendar-alt"></i> Events
         </a>
+        <a href="{{ route('admin.dokumentasi.index') }}" class="nav-item {{ request()->routeIs('admin.dokumentasi.*') ? 'active' : '' }}">
+            <i class="fas fa-images"></i> Dokumentasi
+        </a>
         <a href="{{ route('admin.registrations.index') }}" class="nav-item {{ request()->routeIs('admin.registrations.*') ? 'active' : '' }}">
             <i class="fas fa-clipboard-list"></i> Registrations
+        </a>
+        <a href="{{ route('admin.contacts.index') }}" class="nav-item {{ request()->routeIs('admin.contacts.*') ? 'active' : '' }}">
+            <i class="fas fa-envelope-open-text"></i> Contact Inbox
         </a>
 
         <div class="nav-section">System</div>

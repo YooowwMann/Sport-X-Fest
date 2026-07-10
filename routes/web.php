@@ -2,15 +2,33 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\EventPublicController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\RegistrationController;
 use App\Http\Controllers\Admin\ActivityLogController;
 
-Route::get('/', fn() => redirect('/login'));
+Route::get('/', fn() => redirect('/home'));
 
-// ─── Guest Routes ────────────────────────────────────────────
+// ─── Halaman Profil Tim ───────────────────────────────────────
+Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+
+// ─── Halaman Publik (dari Najwa-Event) ───────────────────────
+Route::get('/home', [EventPublicController::class, 'home'])->name('home');
+Route::get('/events-list', [EventPublicController::class, 'index'])->name('events.public');
+Route::get('/dokumentasi', [EventPublicController::class, 'dokumentasi'])->name('dokumentasi');
+Route::get('/contact', [EventPublicController::class, 'contact'])->name('contact');
+Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
+
+// Pendaftaran event (harus login)
+Route::middleware('auth')->group(function () {
+    Route::get('/daftar', [EventPublicController::class, 'daftar'])->name('daftar');
+    Route::post('/proses-daftar', [EventPublicController::class, 'prosesDaftar'])->name('proses_daftar');
+});
 Route::middleware('guest')->group(function () {
     Route::get('/login', fn() => view('auth.login'))->name('login');
     Route::post('/login', [AuthController::class, 'login']);
@@ -52,4 +70,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Activity Logs
     Route::get('/logs', [ActivityLogController::class, 'index'])->name('logs.index');
+
+    // Contact Inbox
+    Route::get('/contact', [ContactController::class, 'index'])->name('contacts.index');
+    Route::delete('/contact/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
+
+    // Documentation Gallery
+    Route::get('/dokumentasi', [GalleryController::class, 'index'])->name('dokumentasi.index');
+    Route::post('/dokumentasi', [GalleryController::class, 'store'])->name('dokumentasi.store');
+    Route::get('/dokumentasi/{galleryPhoto}/edit', [GalleryController::class, 'edit'])->name('dokumentasi.edit');
+    Route::put('/dokumentasi/{galleryPhoto}', [GalleryController::class, 'update'])->name('dokumentasi.update');
+    Route::delete('/dokumentasi/{galleryPhoto}', [GalleryController::class, 'destroy'])->name('dokumentasi.destroy');
 });

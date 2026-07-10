@@ -36,6 +36,7 @@
                     <th>#</th>
                     <th>Nama</th>
                     <th>Email</th>
+                    <th>No. Telepon</th>
                     <th>Role</th>
                     <th>Status</th>
                     <th>Bergabung</th>
@@ -55,6 +56,7 @@
                         </div>
                     </td>
                     <td style="color:#6b7280;">{{ $user->email }}</td>
+                    <td style="color:#6b7280;">{{ $user->phone ?? '-' }}</td>
                     <td>
                         <span class="badge badge-{{ $user->role }}">{{ ucfirst($user->role) }}</span>
                     </td>
@@ -100,7 +102,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" style="text-align:center;color:#9ca3af;padding:32px;">
+                    <td colspan="8" style="text-align:center;color:#9ca3af;padding:32px;">
                         <i class="fas fa-users" style="font-size:2rem;margin-bottom:8px;display:block;"></i>
                         Tidak ada user ditemukan.
                     </td>

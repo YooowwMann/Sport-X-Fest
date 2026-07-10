@@ -33,6 +33,11 @@ class Event extends Model
         return $this->hasMany(Registration::class)->where('status', 'approved');
     }
 
+    public function galleryPhotos()
+    {
+        return $this->hasMany(GalleryPhoto::class);
+    }
+
     public function getRemainingQuotaAttribute(): int
     {
         return $this->quota - $this->approvedRegistrations()->count();

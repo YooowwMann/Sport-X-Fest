@@ -43,14 +43,20 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name'     => 'required',
+            'name'     => 'required|string|max:100',
             'email'    => 'required|email|unique:users',
+            'phone'    => 'required|string|min:9|max:20|regex:/^[0-9+\-\s]+$/',
             'password' => 'required|min:6|confirmed',
+        ], [
+            'phone.required' => 'Nomor telepon wajib diisi.',
+            'phone.min'      => 'Nomor telepon minimal 9 digit.',
+            'phone.regex'    => 'Format nomor telepon tidak valid.',
         ]);
 
         User::create([
             'name'     => $request->name,
             'email'    => $request->email,
+            'phone'    => $request->phone,
             'password' => Hash::make($request->password),
             'role'     => 'user',
         ]);
